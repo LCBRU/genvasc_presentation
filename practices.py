@@ -32,6 +32,19 @@ map = Basemap(
 # map.drawcoastlines()
 map.readshapefile('data/Areas', 'areas')
 
+df_poly = pd.DataFrame({
+        'shapes': [Polygon(np.array(shape), True) for shape in map.areas],
+        'area': [area['name'] for area in map.areas_info],
+    })
+
+cmap = plt.get_cmap('Oranges')   
+pc = PatchCollection(df_poly.shapes, zorder=2)
+norm = Normalize()
+ 
+pc.set_facecolor(cmap(norm(df_poly.index)))
+ax.add_collection(pc)
+
+
 df = pd.read_csv('data/genvasc_practices_geo.csv')
 
 for index, row in df.iterrows():

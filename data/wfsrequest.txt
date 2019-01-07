@@ -1,0 +1,1 @@
+http://maps.communities.gov.uk:80/geoserver/dclg_inspire/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=dclg_inspire:English%20Town%20Centres%202004&maxFeatures=5000&outputFormat=SHAPE-ZIP

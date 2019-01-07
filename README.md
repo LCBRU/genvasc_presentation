@@ -41,3 +41,14 @@ from mpl_toolkits.basemap import Basemap
 
 This is based on [this example](http://www.datadependence.com/2016/06/creating-map-visualisations-in-python/)
 
+County boundaries and other location data from data.gov.uk as a [Geoserver shapefile download service](http://maps.communities.gov.uk/geoserver/web/?wicket:bookmarkablePage=:org.geoserver.web.demo.MapPreviewPage)
+
+### Data Queries
+
+- [Counties](http://maps.communities.gov.uk:80/geoserver/dclg_inspire/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dclg_inspire:English%20Ceremonial%20Counties&outputFormat=shape-zip&srsName=EPSG:4326)
+- [Urban Areas](http://maps.communities.gov.uk:80/geoserver/dclg_inspire/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=dclg_inspire:Urban_Settlements_2001_WGS84&maxFeatures=5000&outputFormat=SHAPE-ZIP)
+- [Towns](http://maps.communities.gov.uk:80/geoserver/dclg_inspire/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=dclg_inspire:English%20Town%20Centres%202004&maxFeatures=5000&outputFormat=SHAPE-ZIP)
+
+# Theme
+
+[Paletton Theme](http://paletton.com/#uid=31l0u0k4pw002Zk1rKA8KqZeLmi)

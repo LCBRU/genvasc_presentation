@@ -12,7 +12,7 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib import gridspec
 import matplotlib.patheffects as PathEffects
 
-def darken_color(color, amount=0.5):
+def darken_color(color, amount=0.7):
     """
     Lightens the given color by multiplying (1-luminosity) by the given amount.
     Input can be matplotlib color string, hex string, or RGB tuple.
@@ -29,7 +29,7 @@ def darken_color(color, amount=0.5):
     except:
         c = color
     c = colorsys.rgb_to_hls(*mc.to_rgb(c))
-    return colorsys.hls_to_rgb(c[0], amount * (1 - c[1]), c[2])
+    return colorsys.hls_to_rgb(c[0], amount * c[1], c[2])
   
 
 def display_practices(df, color):
@@ -39,7 +39,7 @@ def display_practices(df, color):
 
 year = 2018
 include_potential = True
-output_filename = 'genvasc_potential'
+output_filename = 'genvasc_2020'
 
 plt.rcParams["font.family"] = "norasi"
 fig = plt.figure(figsize=(16, 12))
@@ -56,9 +56,18 @@ df_recruitment = df_recruitment.set_index('year')
 
 ax_recruits = plt.subplot(gs[1])
 
+recruit_count = df_recruitment.loc[year]['cum_recruited']
+potential_recruits = 0
+
+if include_potential:
+  potential_linc_cam_in_2_years = 8000
+  actual_llr_northants_in_last_year = 8000
+  potential_recruits += potential_linc_cam_in_2_years + (actual_llr_northants_in_last_year * 2)
+
 plt.title("Recruits")
-plt.bar(('Recruitment'), [df_recruitment.loc[year]['cum_recruited']], align='center', color='#6EBC4F')
-plt.yticks(np.arange(0, 55_000, step=10_000))
+plt.bar(('Recruits'), recruit_count, align='center', color='#6EBC4F')
+plt.bar(('Recruits'), potential_recruits, bottom=recruit_count, align='center', color=darken_color('#6EBC4F'))
+plt.yticks(np.arange(0, 75_000, step=10_000))
 plt.xticks([])
 
 ax_map = plt.subplot(gs[2])
@@ -96,34 +105,37 @@ for index, row in df_towns.iterrows():
     x,
     y,
     row['name'].title().replace(' ', '\n'),
-    fontsize=15,
+    fontsize=16,
     horizontalalignment='center',
     verticalalignment='bottom',
     color='#FFFFFF',
     weight='bold'
   )
-  txt.set_path_effects([PathEffects.withStroke(linewidth=2, foreground='#222222')])
+  txt.set_path_effects([PathEffects.withStroke(linewidth=2, foreground='#444444')])
 
 
 df_genvasc_practices = pd.read_csv('data/genvasc_practices_geo.csv')
-df_all_practices = df_genvasc_practices
 df_cam = pd.read_csv('data/cambridgeshire_geo.csv')
 df_linc = pd.read_csv('data/our_lincolnshire_geo.csv')
 
 df_genvasc_practices = df_genvasc_practices.loc[df_genvasc_practices['year'] <= year]
 
+practice_count = len(df_genvasc_practices.index)
+potential_practice_count = 0
+
 display_practices(df_genvasc_practices, '#F48C38')
 
 if include_potential:
-  df_all_practices = pd.concat([df_genvasc_practices, df_cam, df_linc], sort=False)
+  potential_practice_count = (len(df_cam.index) + len(df_cam.index)) * 0.7
   display_practices(df_cam, '#00AADD')
   display_practices(df_linc, '#DDDD00')
 
 ax_practices = plt.subplot(gs[0])
 
 plt.title("Practices")
-plt.bar(('Recruitment'), df_all_practices.count(), align='center', color='#006FCA')
-plt.yticks(np.arange(0, 500, step=100))
+plt.bar(('Practices'), practice_count, align='center', color='#006FCA')
+plt.bar(('Practices'), potential_practice_count, bottom=practice_count, align='center', color=darken_color('#006FCA'))
+plt.yticks(np.arange(0, 550, step=100))
 plt.xticks([])
 
 plt.tight_layout()

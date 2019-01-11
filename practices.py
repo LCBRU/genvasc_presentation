@@ -12,24 +12,56 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib import gridspec
 import matplotlib.patheffects as PathEffects
 
-f = plt.figure(figsize=(16, 12))
+def darken_color(color, amount=0.5):
+    """
+    Lightens the given color by multiplying (1-luminosity) by the given amount.
+    Input can be matplotlib color string, hex string, or RGB tuple.
+
+    Examples:
+    >> lighten_color('g', 0.3)
+    >> lighten_color('#F034A3', 0.6)
+    >> lighten_color((.3,.55,.1), 0.5)
+    """
+    import matplotlib.colors as mc
+    import colorsys
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], amount * (1 - c[1]), c[2])
+  
+
+def display_practices(df, color):
+  for index, row in df.iterrows():
+    x, y = map(row['x'], row['y'])
+    map.plot(x, y, marker='.', markeredgecolor=darken_color(color), color=color, markersize=15)
+
+year = 2018
+include_potential = True
+output_filename = 'genvasc_potential'
+
+plt.rcParams["font.family"] = "norasi"
+fig = plt.figure(figsize=(16, 12))
+#fig.suptitle("Title for whole figure", fontsize=48)
 
 gs = gridspec.GridSpec(
   1,
-  2,
-  width_ratios=[1,10]
+  3,
+  width_ratios=[1, 1,10]
 )
 
-df = pd.read_csv('data/genvasc_recruitment.csv')
-df = df.set_index('year')
+df_recruitment = pd.read_csv('data/genvasc_recruitment.csv')
+df_recruitment = df_recruitment.set_index('year')
 
-ax0 = plt.subplot(gs[0])
+ax_recruits = plt.subplot(gs[1])
 
-plt.bar(('Recruitment'), [df.loc[2012]['cum_recruited']], align='center')
+plt.title("Recruits")
+plt.bar(('Recruitment'), [df_recruitment.loc[year]['cum_recruited']], align='center', color='#6EBC4F')
 plt.yticks(np.arange(0, 55_000, step=10_000))
 plt.xticks([])
 
-ax1 = plt.subplot(gs[1])
+ax_map = plt.subplot(gs[2])
 
 # Map bounding box
 # westlimit=-1.5044; southlimit=52.1023; eastlimit=-0.3151; northlimit=52.8302
@@ -54,17 +86,17 @@ local_counties = ('Cambridgeshire', 'Leicestershire', 'Lincolnshire', 'Northampt
 
 patches = [Polygon(np.array(shape), True) for info, shape in zip(map.counties_info, map.counties) if info['NAME'] in local_counties]
 pc = PatchCollection(patches, zorder=2, facecolors=['#362763', '#00664A', '#362763', '#E62A2C', '#9D0051'], edgecolor='#FFFFFF', linewidths=1.)
-ax1.add_collection(pc)
+ax_map.add_collection(pc)
 
-df = pd.read_csv('data/towns_geo.csv')
+df_towns = pd.read_csv('data/towns_geo.csv')
 
-for index, row in df.iterrows():
+for index, row in df_towns.iterrows():
   x, y = map(row['x'], row['y'])
-  txt = ax1.text(
+  txt = ax_map.text(
     x,
     y,
     row['name'].title().replace(' ', '\n'),
-    fontsize=14,
+    fontsize=15,
     horizontalalignment='center',
     verticalalignment='bottom',
     color='#FFFFFF',
@@ -73,12 +105,27 @@ for index, row in df.iterrows():
   txt.set_path_effects([PathEffects.withStroke(linewidth=2, foreground='#222222')])
 
 
-df = pd.read_csv('data/genvasc_practices_geo.csv')
+df_genvasc_practices = pd.read_csv('data/genvasc_practices_geo.csv')
+df_all_practices = df_genvasc_practices
+df_cam = pd.read_csv('data/cambridgeshire_geo.csv')
+df_linc = pd.read_csv('data/our_lincolnshire_geo.csv')
 
-for index, row in df.iterrows():
-  x, y = map(row['x'], row['y'])
-  map.plot(x, y, marker='o', color='#F48C38', markeredgecolor='#222222', markersize=10)
+df_genvasc_practices = df_genvasc_practices.loc[df_genvasc_practices['year'] <= year]
+
+display_practices(df_genvasc_practices, '#F48C38')
+
+if include_potential:
+  df_all_practices = pd.concat([df_genvasc_practices, df_cam, df_linc], sort=False)
+  display_practices(df_cam, '#00AADD')
+  display_practices(df_linc, '#DDDD00')
+
+ax_practices = plt.subplot(gs[0])
+
+plt.title("Practices")
+plt.bar(('Recruitment'), df_all_practices.count(), align='center', color='#006FCA')
+plt.yticks(np.arange(0, 500, step=100))
+plt.xticks([])
 
 plt.tight_layout()
 
-plt.savefig('map.png')
+plt.savefig('{}.png'.format(output_filename))

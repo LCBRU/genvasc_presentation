@@ -86,7 +86,7 @@ def print_map():
     x, y = map(practice['Longitude'], practice['Latitude'])
 
     if any(c.contains_points([[x,y]]) for c in counties):
-      map.plot(x, y, marker='.', color=PRACTICE_COLOR, markersize=5)
+      map.plot(x, y, marker='.', color=PRACTICE_COLOR, markersize=2)
 
   for index, brc in df_brcs.iterrows():
     x, y = map(brc['Longitude'], brc['Latitude'])
